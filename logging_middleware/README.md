@@ -40,3 +40,17 @@ Centralized logging module used across frontend and backend for:
 ## API Flow
 
 Frontend → Backend → Affordmed API → Backend → Frontend
+
+# Campus Notifications System
+
+## Home Page
+
+![Home Page](screenshot/home.png)
+
+## backend
+
+![backend](screenshot/backend.png)
+
+## postman
+
+![Postman](screenshot/postman.png)
