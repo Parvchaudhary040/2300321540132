@@ -12,4 +12,11 @@ export const logger = {
       error
     );
   },
+
+  warn: (message, data = null) => {
+    console.warn(
+      `[WARN] ${new Date().toISOString()} - ${message}`,
+      data
+    );
+  },
 };

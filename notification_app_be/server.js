@@ -1,16 +1,29 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+const logger = require("./logger");
 
 const app = express();
 
 app.use(cors());
 
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJwYXJ2LjIzYjE1NDEwMzVAYWJlcy5hYy5pbiIsImV4cCI6MTc4MDk5MTE5MCwiaWF0IjoxNzgwOTkwMjkwLCJpc3MiOiJBZmZvcmQgTWVkaWNhbCBUZWNobm9sb2dpZXMgUHJpdmF0ZSBMaW1pdGVkIiwianRpIjoiYWZiZTY3NTMtN2UzZS00NjM2LTk0NzctNGFlZjIyYTJkNDQ4IiwibG9jYWxlIjoiZW4tSU4iLCJuYW1lIjoicGFydiBjaGF1ZGhhcnkiLCJzdWIiOiJhY2FlODE2NC1hODFhLTQyZTgtOTUzYS1lMThiNmJiMTk4NGYifSwiZW1haWwiOiJwYXJ2LjIzYjE1NDEwMzVAYWJlcy5hYy5pbiIsIm5hbWUiOiJwYXJ2IGNoYXVkaGFyeSIsInJvbGxObyI6IjIzMDAzMjE1NDAxMzIiLCJhY2Nlc3NDb2RlIjoiY1h1cWh0IiwiY2xpZW50SUQiOiJhY2FlODE2NC1hODFhLTQyZTgtOTUzYS1lMThiNmJiMTk4NGYiLCJjbGllbnRTZWNyZXQiOiJWbXdXSFZoQ05GSnpuUkZNIn0.hejr3SRynqi007F3Bhx6go0BtZiDshktK1P4vXhJuwY";
+logger.info("Backend server initialized");
+
+// Paste your latest valid token here
+const TOKEN = process.env.TOKEN;
 
 app.get("/notifications", async (req, res) => {
+  logger.info(
+    "Notifications endpoint called",
+    req.query
+  );
+
   try {
-    const { page = 1, limit = 10, type = "All" } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      type = "All",
+    } = req.query;
 
     const response = await axios.get(
       "http://4.224.186.213/evaluation-service/notifications",
@@ -21,13 +34,16 @@ app.get("/notifications", async (req, res) => {
       }
     );
 
-    let notifications = response.data.notifications;
+    let notifications =
+      response.data.notifications;
 
-    // Filter by type
+    // Filter
     if (type !== "All") {
-      notifications = notifications.filter(
-        (notification) => notification.Type === type
-      );
+      notifications =
+        notifications.filter(
+          (notification) =>
+            notification.Type === type
+        );
     }
 
     // Priority Sorting
@@ -39,7 +55,8 @@ app.get("/notifications", async (req, res) => {
 
     notifications.sort((a, b) => {
       const priorityDiff =
-        priorityMap[b.Type] - priorityMap[a.Type];
+        priorityMap[b.Type] -
+        priorityMap[a.Type];
 
       if (priorityDiff !== 0) {
         return priorityDiff;
@@ -53,7 +70,8 @@ app.get("/notifications", async (req, res) => {
 
     // Pagination
     const startIndex =
-      (Number(page) - 1) * Number(limit);
+      (Number(page) - 1) *
+      Number(limit);
 
     const endIndex =
       startIndex + Number(limit);
@@ -64,6 +82,17 @@ app.get("/notifications", async (req, res) => {
         endIndex
       );
 
+    logger.info(
+      "Notifications fetched successfully",
+      {
+        total:
+          notifications.length,
+        page,
+        limit,
+        type,
+      }
+    );
+
     res.json({
       total: notifications.length,
       page: Number(page),
@@ -72,21 +101,21 @@ app.get("/notifications", async (req, res) => {
         paginatedNotifications,
     });
   } catch (error) {
-  console.log("STATUS:");
-  console.log(error.response?.status);
+    logger.error(
+      "Notification fetch failed",
+      error.response?.data ||
+        error.message
+    );
 
-  console.log("DATA:");
-  console.log(error.response?.data);
-
-  console.log("MESSAGE:");
-  console.log(error.message);
-
-  res.status(500).json({
-    message: "Failed to fetch notifications",
-    error: error.response?.data || error.message,
-  });
-}
+    res.status(500).json({
+      message:
+        "Failed to fetch notifications",
+    });
+  }
 });
+
 app.listen(5000, () => {
-  console.log("Server running on port 5000");
+  logger.info(
+    "Server running on port 5000"
+  );
 });

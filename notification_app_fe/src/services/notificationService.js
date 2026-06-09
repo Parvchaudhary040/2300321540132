@@ -1,4 +1,5 @@
 import axios from "axios";
+import { logger } from "../middleware/logger";
 
 const API_URL = "http://localhost:5000/notifications";
 
@@ -7,13 +8,33 @@ export const getNotifications = async (
   limit = 10,
   type = "All"
 ) => {
-  const response = await axios.get(API_URL, {
-    params: {
+  try {
+    logger.info("Fetching notifications", {
       page,
       limit,
       type,
-    },
-  });
+    });
 
-  return response.data;
+    const response = await axios.get(API_URL, {
+      params: {
+        page,
+        limit,
+        type,
+      },
+    });
+
+    logger.info(
+      "Notifications fetched successfully",
+      response.data
+    );
+
+    return response.data;
+  } catch (error) {
+    logger.error(
+      "Failed to fetch notifications",
+      error
+    );
+
+    throw error;
+  }
 };
