@@ -1,42 +1,56 @@
 import { useEffect, useState } from "react";
+
+import {
+  Container,
+  Typography,
+  Select,
+  MenuItem,
+  Button,
+  Box,
+  CircularProgress,
+} from "@mui/material";
+
 import { getNotifications } from "./services/notificationService";
-import NotificationList from "./components/NotificationList";
+
+import NotificationCard from "./components/NotificationCard";
 
 function App() {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] =
+    useState([]);
+
+  const [page, setPage] = useState(1);
+
+  const [type, setType] =
+    useState("All");
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [total, setTotal] =
+    useState(0);
+
+  const limit = 10;
 
   useEffect(() => {
     loadNotifications();
-  }, []);
+  }, [page, type]);
 
   const loadNotifications = async () => {
     try {
-      const data = await getNotifications();
+      setLoading(true);
 
-      const priorityMap = {
-        Result: 3,
-        Event: 2,
-        Placement: 1,
-      };
+      const data =
+        await getNotifications(
+          page,
+          limit,
+          type
+        );
 
-      const sortedNotifications = [...data]
-        .sort((a, b) => {
-          const priorityDifference =
-            priorityMap[b.Type] -
-            priorityMap[a.Type];
+      setNotifications(
+        data.notifications
+      );
 
-          if (priorityDifference !== 0)
-            return priorityDifference;
-
-          return (
-            new Date(b.Timestamp) -
-            new Date(a.Timestamp)
-          );
-        })
-        .slice(0, 10);
-
-      setNotifications(sortedNotifications);
+      setTotal(data.total);
     } catch (error) {
       console.error(error);
     } finally {
@@ -44,18 +58,95 @@ function App() {
     }
   };
 
-  if (loading) {
-    return <h1>Loading...</h1>;
-  }
-
   return (
-    <div>
-      <h1>Campus Notifications</h1>
+    <Container
+      maxWidth="md"
+      sx={{ mt: 4 }}
+    >
+      <Typography
+        variant="h3"
+        align="center"
+        gutterBottom
+      >
+        Campus Notifications
+      </Typography>
 
-      <NotificationList
-        notifications={notifications}
-      />
-    </div>
+      <Box sx={{ mb: 3 }}>
+        <Select
+          fullWidth
+          value={type}
+          onChange={(e) =>
+            setType(e.target.value)
+          }
+        >
+          <MenuItem value="All">
+            All
+          </MenuItem>
+
+          <MenuItem value="Result">
+            Result
+          </MenuItem>
+
+          <MenuItem value="Event">
+            Event
+          </MenuItem>
+
+          <MenuItem value="Placement">
+            Placement
+          </MenuItem>
+        </Select>
+      </Box>
+
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        notifications.map(
+          (notification) => (
+            <NotificationCard
+              key={notification.ID}
+              notification={
+                notification
+              }
+            />
+          )
+        )
+      )}
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          mt: 3,
+        }}
+      >
+        <Button
+          variant="contained"
+          disabled={page === 1}
+          onClick={() =>
+            setPage(page - 1)
+          }
+        >
+          Previous
+        </Button>
+
+        <Typography>
+          Page {page}
+        </Typography>
+
+        <Button
+          variant="contained"
+          disabled={
+            page * limit >= total
+          }
+          onClick={() =>
+            setPage(page + 1)
+          }
+        >
+          Next
+        </Button>
+      </Box>
+    </Container>
   );
 }
 

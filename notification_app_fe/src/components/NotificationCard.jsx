@@ -1,12 +1,26 @@
+import {
+  Card,
+  CardContent,
+  Typography,
+} from "@mui/material";
+
 function NotificationCard({ notification }) {
   return (
-    <div className="notification-card">
-      <h3>{notification.type}</h3>
+    <Card sx={{ mb: 2 }}>
+      <CardContent>
+        <Typography variant="h6">
+          {notification.Type}
+        </Typography>
 
-      <p>{notification.message}</p>
+        <Typography>
+          {notification.Message}
+        </Typography>
 
-      <small>{notification.timestamp}</small>
-    </div>
+        <Typography variant="body2">
+          {notification.Timestamp}
+        </Typography>
+      </CardContent>
+    </Card>
   );
 }
 
