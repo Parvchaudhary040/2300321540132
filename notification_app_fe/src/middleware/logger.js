@@ -11,5 +11,5 @@ export const logger = {
       `[ERROR] ${new Date().toISOString()} - ${message}`,
       error
     );
-  }
+  },
 };

@@ -17,7 +17,10 @@ export const getNotifications = async () => {
 
     return response.data.notifications;
   } catch (error) {
-    logger.error("API Error", error);
+    logger.error(
+      "Error fetching notifications",
+      error
+    );
 
     throw error;
   }
