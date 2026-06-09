@@ -1,14 +1,24 @@
+import axios from "axios";
+import { logger } from "../middleware/logger";
+
 const API_URL =
-  "http://24.199.145.13/evaluation-service/notifications";
+  "http://4.224.186.213/evaluation-service/notifications";
 
-export const fetchNotifications = async () => {
-  const response = await fetch(API_URL);
+export const getNotifications = async () => {
+  try {
+    logger.info("Fetching notifications");
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch notifications");
+    const response = await axios.get(API_URL);
+
+    logger.info(
+      "Notifications fetched successfully",
+      response.data
+    );
+
+    return response.data.notifications;
+  } catch (error) {
+    logger.error("API Error", error);
+
+    throw error;
   }
-
-  const data = await response.json();
-
-  return data.notifications;
 };
